@@ -46,5 +46,6 @@ export MS_TEAMS_TOKEN
 
 ## Running a test
 ```bash
-
+# CSA (Chat Svc Agg)
+go test -v github.com/fossteams/teams-api/api/csa
 ```
