@@ -362,7 +362,7 @@ type Team struct {
 	ThreadVersion                  string              `json:"threadVersion"`
 }
 
-func (c *CSASvc) GetTeams() (*[]Team, error) {
+func (c *CSASvc) GetConversations() (*ConversationResponse, error) {
 	endpointUrl := c.getEndpoint("/teams/users/me")
 
 	values := endpointUrl.Query()
@@ -384,7 +384,7 @@ func (c *CSASvc) GetTeams() (*[]Team, error) {
 		return nil, api.InvalidResponseError(resp)
 	}
 
-	var teams []Team
+	var teams ConversationResponse
 	decoder := json.NewDecoder(resp.Body)
 	decoder.DisallowUnknownFields()
 	err = decoder.Decode(&teams)

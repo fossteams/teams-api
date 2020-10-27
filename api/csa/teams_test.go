@@ -2,6 +2,7 @@ package csa_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/fossteams/teams-api/api"
 	"github.com/fossteams/teams-api/api/csa"
 	"github.com/stretchr/testify/assert"
@@ -22,16 +23,18 @@ func initTest(t *testing.T) *csa.CSASvc {
 	return csaSvc
 }
 
-func TestGetTeams(t *testing.T){
+func TestGetConversations(t *testing.T){
 	csaSvc := initTest(t)
-	teams, err := csaSvc.GetTeams()
+	conversations, err := csaSvc.GetConversations()
 	
 	if err != nil {
 		t.Error(err)
 	}
 
-	assert.NotNil(t, teams)
-	assert.Greater(t, len(*teams), 0)
+	assert.NotNil(t, conversations)
+	assert.Greater(t, len(conversations.Chats), 0)
+	assert.Greater(t, len(conversations.Teams), 0)
+	fmt.Printf("Conversations: %+v", conversations)
 }
 
 func TestDecodeTeamsJson(t *testing.T) {
