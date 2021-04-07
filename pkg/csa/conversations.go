@@ -14,7 +14,7 @@ import (
 )
 
 func (c *CSASvc) GetConversations() (*ConversationResponse, error) {
-	endpointUrl := c.getEndpoint("/teams/users/me")
+	endpointUrl := c.getEndpoint(EndpointChatSvcAgg, "/teams/users/me")
 
 	values := endpointUrl.Query()
 	values.Add("isPrefetch", "false")
@@ -35,11 +35,29 @@ func (c *CSASvc) GetConversations() (*ConversationResponse, error) {
 		return nil, api.InvalidResponseError(resp)
 	}
 
+	jsonBuffer, err := c.getJSON(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	var teams ConversationResponse
+	decoder := json.NewDecoder(jsonBuffer)
+	// decoder.DisallowUnknownFields()
+	err = decoder.Decode(&teams)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &teams, nil
+}
+
+func (c *CSASvc) getJSON(resp *http.Response) (io.Reader, error) {
 	var jsonBuffer io.Reader
 
 	if c.debugSave {
 		// Temporary save response
-		f, err := ioutil.TempFile(os.TempDir(), "teams-conversations-*.json")
+		f, err := ioutil.TempFile(os.TempDir(), "teams-*.json")
 		if err != nil {
 			return nil, fmt.Errorf("unable to create temporary file")
 		}
@@ -54,18 +72,9 @@ func (c *CSASvc) GetConversations() (*ConversationResponse, error) {
 	} else {
 		jsonBuffer = resp.Body
 	}
-
-	var teams ConversationResponse
-	decoder := json.NewDecoder(jsonBuffer)
-	// decoder.DisallowUnknownFields()
-	err = decoder.Decode(&teams)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &teams, nil
+	return jsonBuffer, nil
 }
+
 
 type TeamsByName []Team
 type ChannelsByName []Channel

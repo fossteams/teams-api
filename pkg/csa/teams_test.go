@@ -13,7 +13,15 @@ func initTest(t *testing.T) *CSASvc {
 	if err != nil {
 		t.Error(err)
 	}
-	csaSvc, err := NewCSAService(token)
+
+	// Get Skype Token
+	skypeToken, err := api.GetSkypeToken()
+	if err != nil {
+		t.Errorf("unable to get Skype Token: %v", err)
+	}
+	skypeToken.Type = api.TokenSkype
+
+	csaSvc, err := NewCSAService(token, skypeToken)
 
 	if err != nil {
 		t.Error(err)
@@ -37,6 +45,28 @@ func TestGetConversations(t *testing.T){
 	assert.Greater(t, len(conversations.Chats), 0)
 	assert.Greater(t, len(conversations.Teams), 0)
 	fmt.Printf("Conversations: %+v", conversations)
+}
+
+func TestGetMessages(t *testing.T){
+	csaSvc := initTest(t)
+	csaSvc.DebugSave(true)
+
+	conversations, err := csaSvc.GetConversations()
+	if err != nil {
+		t.Fatalf("unable to get conversations: %v", err)
+	}
+
+
+	assert.NotNil(t, conversations)
+	assert.Greater(t, len(conversations.Chats), 0)
+	assert.Greater(t, len(conversations.Teams), 0)
+
+	messages, err := csaSvc.GetMessagesByChannel(&conversations.Teams[0].Channels[0])
+	if err != nil {
+		t.Fatalf("unable to get messages by channel: %v", err)
+	}
+
+	assert.Greater(t, len(messages), 0)
 }
 
 func TestParseConversations(t *testing.T) {

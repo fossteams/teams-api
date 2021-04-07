@@ -10,16 +10,19 @@ import (
 )
 
 type CSASvc struct {
-	token     *api.TeamsToken
-	csaSvcUrl *url.URL
-	client    *http.Client
-	debugSave bool
+	token      *api.TeamsToken
+	csaSvcUrl  *url.URL
+	msgUrl     *url.URL
+	client     *http.Client
+	debugSave  bool
+	skypeToken *api.TeamsToken
 }
 
-const ChatSvcAgg = "https://teams.microsoft.com/api/csa/"
+const ChatSvcAgg = "https://teams.microsoft.com/api/csa/api/"
+const MessagesHost = "https://emea.ng.msg.teams.microsoft.com/"
 // Requires an aud:https://chatsvcagg.teams.microsoft.com token
 
-func NewCSAService(token *api.TeamsToken) (*CSASvc, error) {
+func NewCSAService(token *api.TeamsToken, skypeToken *api.SkypeToken) (*CSASvc, error) {
 	// https://teams.microsoft.com/api/csa/api/v1/teams/users/me?isPrefetch=false&enableMembershipSummary=true
 	svcUrl, err := url.Parse(ChatSvcAgg)
 	if err != nil {
@@ -27,14 +30,25 @@ func NewCSAService(token *api.TeamsToken) (*CSASvc, error) {
 	}
 
 	if token == nil {
-		return nil, fmt.Errorf("token is nil")
+		return nil, fmt.Errorf("token cannot be nil")
+	}
+
+	if skypeToken == nil {
+		return nil, fmt.Errorf("skypeToken cannot be nil")
+	}
+
+	msgUrl, err := url.Parse(MessagesHost)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse Messages URL: %v", err)
 	}
 
 	client := http.DefaultClient
 
 	return &CSASvc{
 		csaSvcUrl: svcUrl,
+		msgUrl: msgUrl,
 		token:     token,
+		skypeToken: skypeToken,
 		client:    client,
 	}, nil
 }
@@ -43,11 +57,25 @@ func (c *CSASvc) DebugSave(debugFlag bool){
 	c.debugSave = debugFlag
 }
 
-func (c *CSASvc) getEndpoint(path string) *url.URL {
+type EndpointType string
+const (
+	EndpointChatSvcAgg EndpointType = "chatsvcagg"
+	EndpointMessages EndpointType = "messages"
+)
+
+
+func (c *CSASvc) getEndpoint(t EndpointType, path string) *url.URL {
 	if strings.HasPrefix(path, "/") {
 		path = path[1:]
 	}
-	endpointUrl, err := c.csaSvcUrl.Parse("api/v1/" + path)
+	var url = c.csaSvcUrl
+	switch t {
+	case EndpointChatSvcAgg:
+		url = c.csaSvcUrl
+	case EndpointMessages:
+		url = c.msgUrl
+	}
+	endpointUrl, err := url.Parse("v1/" + path)
 	if err != nil {
 		return c.csaSvcUrl
 	}
@@ -61,6 +89,13 @@ func (c *CSASvc) AuthenticatedRequest(method, url string, body io.Reader) (*http
 		return nil, err
 	}
 
-	req.Header.Add("Authorization", api.AuthString(c.token))
+	if strings.HasPrefix(url, ChatSvcAgg) {
+		// Use ChatSvgAgg Token
+		req.Header.Add("Authorization", api.AuthString(c.token))
+	} else if strings.HasPrefix(url, MessagesHost) {
+		// Use SkypeToken
+		req.Header.Add("Authentication", api.AuthString(c.skypeToken))
+	}
+
 	return req, nil
 }

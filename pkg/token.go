@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"io"
+	"net/http"
 	"os"
 	"path"
 	"strings"
@@ -40,6 +41,22 @@ func AuthString(token *TeamsToken) string {
 }
 
 func GetSkypeToken() (*SkypeToken, error) {
+	authClient := New(http.DefaultClient)
+	rootToken, err := GetRootToken()
+	if err != nil {
+		return nil, fmt.Errorf("unable to get root token: %v", err)
+	}
+	skypeToken, err := authClient.Authz(rootToken, Refresh)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get skypeToken: %v", err)
+	}
+
+	skypeToken.Type = TokenSkype
+
+	return skypeToken, nil
+}
+
+func GetSkypeSpacesToken() (*SkypeToken, error) {
 	return getToken("skype")
 }
 

@@ -25,19 +25,18 @@ func New() (*TeamsClient, error) {
 		return nil, fmt.Errorf("unable to get teams token: %v", err)
 	}
 
-	// Get Skype Token
-	_, err = api.GetTeamsToken()
-	if err != nil {
-		return nil, fmt.Errorf("unable to get skype token: %v", err)
-	}
-
 	chatSvcToken, err := api.GetChatSvcAggToken()
 	if err != nil {
 		return nil, fmt.Errorf("unable to get chat service token: %v", err)
 	}
 
+	skypeToken, err := api.GetSkypeToken()
+	if err != nil {
+		return nil, fmt.Errorf("unable to get SkypeToken: %v", err)
+	}
+
 	// Initialize Chat Service
-	csaSvc, err := csa.NewCSAService(chatSvcToken)
+	csaSvc, err := csa.NewCSAService(chatSvcToken, skypeToken)
 	if err != nil {
 		return nil, fmt.Errorf("unable to init Chat Service")
 	}
@@ -48,4 +47,8 @@ func New() (*TeamsClient, error) {
 
 func (t *TeamsClient) GetConversations() (*csa.ConversationResponse, error) {
 	return t.chatSvc.GetConversations()
+}
+
+func (t *TeamsClient) GetMessages(channel *csa.Channel) ([]csa.ChatMessage, error) {
+	return t.chatSvc.GetMessagesByChannel(channel)
 }
