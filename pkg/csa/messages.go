@@ -14,16 +14,36 @@ const (
 	ChatMessageTypeMessage ChatMessageType = "Message"
 )
 
+type UserEmotion struct {
+	Mri   string
+	Time  int64 // TODO: Convert to time.time ?
+	Value string
+}
+
+type Emotion struct {
+	Key   string
+	Users []UserEmotion
+}
+
 type ChatMessageProperties struct {
-	Subject      string
-	EmailDetails string
-	Meta         string
-	Files        string
+	Subject        string
+	EmailDetails   string
+	Meta           string
+	Files          string
+	Emotions       []Emotion
+	DeleteTime     int64 // TODO: Convert to time.Time ?
+	AdminDelete    *bool
+	S2SPartnerName string
+}
+
+type AnnotationsSummary struct {
+	Emotions map[string]int64
 }
 
 type ChatMessage struct {
 	Id                  string
 	SequenceId          int64
+	SkypeEditedId       string
 	ClientMessageId     string
 	Version             string
 	ConversationId      string
@@ -35,13 +55,15 @@ type ChatMessage struct {
 	AmsReferences       []string
 	From                string
 	ImDisplayName       string
+	S2SPartnerName      string
 	ComposeTime         string // TODO: Parse as time.Time
 	OriginalArrivalTime string // TODO: Parse as time.Time
 	Properties          ChatMessageProperties
+	AnnotationsSummary  AnnotationsSummary
 }
 
 type MessagesMetadata struct {
-	BackwardLink string
+	BackwardLink                 string
 	SyncState                    string
 	LastCompleteSegmentStartTime int64 // TODO: Parse as time.Time
 	LastCompleteSegmentEndTime   int64 // TODO: Parse as time.Time
