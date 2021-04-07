@@ -1,4 +1,4 @@
-package auth
+package api
 
 import (
 	"bytes"
@@ -22,4 +22,18 @@ func TestParseAuth(t *testing.T) {
 	}
 	
 	fmt.Printf("%v", authResp)
+}
+
+func TestRefreshToken(t *testing.T){
+	authzClient := New(nil)
+	rootToken, err := GetRootToken()
+	if err != nil {
+		t.Fatalf("unable to get root token: %v", err)
+	}
+	skypeJwt, err := authzClient.Authz(rootToken, Refresh)
+	if err != nil {
+		t.Fatalf("unable to get refresh token: %v", err)
+	}
+
+	fmt.Printf("got token=%+v", skypeJwt.Inner.Claims)
 }

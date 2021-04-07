@@ -2,9 +2,8 @@ package mt_test
 
 import (
 	"fmt"
-	"github.com/fossteams/teams-api/api"
-	"github.com/fossteams/teams-api/api/auth"
-	"github.com/fossteams/teams-api/api/mt"
+	"github.com/fossteams/teams-api/pkg"
+	"github.com/fossteams/teams-api/pkg/mt"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
@@ -13,14 +12,13 @@ import (
 )
 
 func initTest(t *testing.T) *mt.MTService {
-
-	token, err := api.GetTokenFromEnv()
+	token, err := api.GetRootToken()
 	if err != nil {
 		t.Error(err)
 	}
 	
-	const MiddleTier = "https://teams.microsoft.com/api/mt/emea"
-	userSvc, err := mt.NewMiddleTierService(MiddleTier, auth.Emea, token)
+	const MiddleTier = "https://teams.microsoft.com/api/mt/"
+	userSvc, err := mt.NewMiddleTierService(MiddleTier, api.Emea, token)
 
 	if err != nil {
 		t.Error(err)
@@ -57,7 +55,7 @@ func TestGetUserProfilePicture(t *testing.T){
 	assert.Nil(t, err)
 	assert.NotNil(t, profilePicture)
 	assert.Greater(t, len(profilePicture), 0)
-	f, err := ioutil.TempFile(os.TempDir(), "teams-api*.jpg")
+	f, err := ioutil.TempFile(os.TempDir(), "teams-pkg*.jpg")
 	if err != nil {
 		t.Errorf("unable to create temp file: %v", err)
 		t.Fail()

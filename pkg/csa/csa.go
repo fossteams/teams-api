@@ -1,7 +1,8 @@
 package csa
 
 import (
-	"github.com/fossteams/teams-api/api"
+	"fmt"
+	"github.com/fossteams/teams-api/pkg"
 	"io"
 	"net/http"
 	"net/url"
@@ -12,15 +13,21 @@ type CSASvc struct {
 	token     *api.TeamsToken
 	csaSvcUrl *url.URL
 	client    *http.Client
+	debugSave bool
 }
 
-const CSA_SERVICE = "https://teams.microsoft.com/api/csa/"
+const ChatSvcAgg = "https://teams.microsoft.com/api/csa/"
+// Requires an aud:https://chatsvcagg.teams.microsoft.com token
 
 func NewCSAService(token *api.TeamsToken) (*CSASvc, error) {
 	// https://teams.microsoft.com/api/csa/api/v1/teams/users/me?isPrefetch=false&enableMembershipSummary=true
-	svcUrl, err := url.Parse(CSA_SERVICE)
+	svcUrl, err := url.Parse(ChatSvcAgg)
 	if err != nil {
 		return nil, err
+	}
+
+	if token == nil {
+		return nil, fmt.Errorf("token is nil")
 	}
 
 	client := http.DefaultClient
@@ -30,6 +37,10 @@ func NewCSAService(token *api.TeamsToken) (*CSASvc, error) {
 		token:     token,
 		client:    client,
 	}, nil
+}
+
+func (c *CSASvc) DebugSave(debugFlag bool){
+	c.debugSave = debugFlag
 }
 
 func (c *CSASvc) getEndpoint(path string) *url.URL {

@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/fossteams/teams-api/api"
+	"github.com/fossteams/teams-api/pkg"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -39,6 +39,7 @@ type Phone struct {
 }
 
 type User struct {
+	Alias                      string          `json:"alias"`
 	AccountEnabled             bool            `json:"accountEnabled,omitempty"`
 	Department                 string          `json:"department,omitempty"`
 	DisplayName                string          `json:"displayName"`

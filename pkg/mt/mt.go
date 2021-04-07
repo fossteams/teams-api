@@ -1,8 +1,7 @@
 package mt
 
 import (
-	"github.com/fossteams/teams-api/api"
-	"github.com/fossteams/teams-api/api/auth"
+	"github.com/fossteams/teams-api/pkg"
 	"io"
 	"net/http"
 	"net/url"
@@ -11,12 +10,12 @@ import (
 
 type MTService struct {
 	middleTierUrl *url.URL
-	region        auth.Region
+	region        api.Region
 	token         *api.TeamsToken
 	client        *http.Client
 }
 
-func NewMiddleTierService(middleTierUrl string, region auth.Region, token *api.TeamsToken) (*MTService, error) {
+func NewMiddleTierService(middleTierUrl string, region api.Region, token *api.TeamsToken) (*MTService, error) {
 	svcUrl, err := url.Parse(middleTierUrl)
 	if err != nil {
 		return nil, err
@@ -32,7 +31,7 @@ func NewMiddleTierService(middleTierUrl string, region auth.Region, token *api.T
 	}, nil
 }
 
-func (m *MTService) AuthenticatedRequest(method, url string, body io.Reader) (*http.Request, error) {
+func (m *MTService)  AuthenticatedRequest(method, url string, body io.Reader) (*http.Request, error) {
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return nil, err

@@ -1,9 +1,6 @@
 package csa
 
 import (
-	"encoding/json"
-	"github.com/fossteams/teams-api/api"
-	"net/http"
 	"time"
 )
 
@@ -43,6 +40,7 @@ type ChatMember struct {
 	Role         ChatMemberRole
 	FriendlyName string
 	TenantId     string
+	ObjectId     string
 }
 
 type DateRange struct {
@@ -80,6 +78,7 @@ type MeetingInfo struct {
 	AppointmentType        int
 	MeetingType            int
 	Scenario               string
+	TenantId               string `json:"tenantId"`
 }
 
 type Chat struct {
@@ -141,8 +140,9 @@ type RetentionHorizonV2 struct {
 }
 
 type FileSettings struct {
-	FilesRelativePath string
-	DocumentLibraryId string
+	FilesRelativePath     string
+	DocumentLibraryId     string
+	SharepointRootLibrary string
 }
 
 type Tab struct {
@@ -209,6 +209,23 @@ type ChannelSettings struct {
 	ChannelBotsPostPermissions       int
 }
 
+type ActiveMeetup struct {
+	MessageId           string
+	ConversationURL     string    `json:"conversationUrl"`
+	ConversationId      string    `json:"conversationId"`
+	GroupCallInitiator  string    `json:"groupCallInitiator"`
+	WasInitiatorInLobby bool      `json:"wasInitiatorInLobby"`
+	Expiration          time.Time `json:"expiration"`
+	Status              string    `json:"status"`
+	IsHostless          bool      `json:"isHostless"`
+	TenantId            string    `json:"tenantId"`
+	OrganizerId         string    `json:"organizerId"`
+	CallMeetingType     int       `json:"callMeetingType"`
+	ConversationType    string    `json:"conversationType"`
+}
+
+type MemberSettings TeamSettings
+
 type Channel struct {
 	Id                       string
 	DisplayName              string
@@ -239,18 +256,22 @@ type Channel struct {
 	MemberRole               MemberRole
 	IsMuted                  bool
 	MembershipExpiry         int
+	ActiveMeetups            []ActiveMeetup
 	IsFavoriteByDefault      bool
 	CreationTime             time.Time
 	IsArchived               bool
 	ChannelType              ChannelType
 	ChannelSettings          ChannelSettings
 	MembershipVersion        int
-	MembershipSummary        *string
+	MembershipSummary        *MembershipSummary
+	MemberSettings           MemberSettings `json:"memberSettings"`
+	GuestSettings            MemberSettings `json:"guestSettings"`
 	IsModerator              bool
 	GroupId                  string
 	ChannelOnlyMember        bool
 	ThreadSchemaVersion      string `json:"threadSchemaVersion,omitempty"`
 	UserConsumptionHorizon   ConsumptionHorizon
+	TenantId                 string `json:"tenantId"`
 }
 
 type AccessType int
@@ -296,8 +317,8 @@ type TeamStatus struct {
 }
 
 type MembershipSummary struct {
-	BotCount          int
-	MutedMembersCount int
+	BotCount          int `json:"botCount"`
+	MutedMembersCount int `json:"mutedMembersCount"`
 	TotalMemberCount  int
 	AdminRoleCount    int
 	UserRoleCount     int
@@ -347,7 +368,7 @@ type Team struct {
 	MaximumMemberLimitExceeded     bool                `json:"maximumMemberLimitExceeded"`
 	MemberRole                     MemberRole          `json:"memberRole"`
 	MembershipExpiry               int                 `json:"membershipExpiry"`
-	MembershipSummary              MembershipSummary   `json:"membershipSummary"`
+	MembershipSummary              *MembershipSummary  `json:"membershipSummary"`
 	MembershipVersion              int                 `json:"membershipVersion"`
 	PictureETag                    string              `json:"pictureETag"`
 	SmtpAddress                    string              `json:"smtpAddress"`
@@ -360,38 +381,4 @@ type Team struct {
 	TenantId                       string              `json:"tenantId"`
 	ThreadSchemaVersion            string              `json:"threadSchemaVersion,omitempty"`
 	ThreadVersion                  string              `json:"threadVersion"`
-}
-
-func (c *CSASvc) GetConversations() (*ConversationResponse, error) {
-	endpointUrl := c.getEndpoint("/teams/users/me")
-
-	values := endpointUrl.Query()
-	values.Add("isPrefetch", "false")
-	values.Add("enableMembershipSummary", "true")
-	endpointUrl.RawQuery = values.Encode()
-
-	req, err := c.AuthenticatedRequest("GET", endpointUrl.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := c.client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, api.InvalidResponseError(resp)
-	}
-
-	var teams ConversationResponse
-	decoder := json.NewDecoder(resp.Body)
-	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&teams)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &teams, nil
 }
