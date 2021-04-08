@@ -115,7 +115,7 @@
         },
         "payload": {
             "aud": "https://api.spaces.skype.com",
-            "iss": "https://sts.windows.net/364e5b87-c1c7-420d-9bee-c35d19b557a1/",
+            "iss": "https://sts.windows.net/TENANT_ID/",
             "iat": 1617721489,
             "nbf": 1617721489,
             "exp": 1617725389,
