@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/html"
 	"sort"
+	"strings"
 	"testing"
 )
 
@@ -62,8 +63,12 @@ func TestTeamsClient_GetMessages(t *testing.T) {
 	}
 
 	// Get first team, first channel
-	channel := convs.Teams[0].Channels[0]
+	team := convs.Teams[0]
+	channel := team.Channels[0]
 	assert.NotNil(t, channel)
+
+	fmt.Printf("%s\n", aurora.Red(team.DisplayName))
+	fmt.Printf("%s\n", aurora.Yellow(channel.DisplayName))
 
 	messages, err := c.GetMessages(&channel)
 	if err != nil {
@@ -83,7 +88,11 @@ func TestTeamsClient_GetMessages(t *testing.T) {
 
 			switch tt {
 			case html.TextToken:
-				fmt.Printf("\t%v\n", aurora.Blue(string(z.Text())))
+				text := string(z.Text())
+				if strings.TrimSpace(text) == "" {
+					continue
+				}
+				fmt.Printf("\t%v\n", aurora.Blue(text))
 			}
 			if tt == html.ErrorToken {
 				break

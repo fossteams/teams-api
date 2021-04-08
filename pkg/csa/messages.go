@@ -26,14 +26,22 @@ type Emotion struct {
 }
 
 type ChatMessageProperties struct {
-	Subject        string
-	EmailDetails   string
-	Meta           string
-	Files          string
-	Emotions       []Emotion
-	DeleteTime     int64 // TODO: Convert to time.Time ?
-	AdminDelete    *bool
-	S2SPartnerName string
+	Subject               string
+	EmailDetails          string
+	Meta                  string
+	Files                 string
+	Emotions              []Emotion
+	DeleteTime            int64 // TODO: Convert to time.Time ?
+	AdminDelete           *bool
+	S2SPartnerName        string
+	Mentions              string
+	Links                 string
+	EditTime              interface{} // Can be either string or int64, wtf? TODO: Convert to time.Time ?
+	CounterPartyMessageId int64
+	OriginContextId       int64
+	ParentMessageId       int64
+	SkipFanOutToBots      bool
+	Cards                 string
 }
 
 type AnnotationsSummary struct {
@@ -44,6 +52,7 @@ type ChatMessage struct {
 	Id                  string
 	SequenceId          int64
 	SkypeEditedId       string
+	SkypeEditOffset     int
 	ClientMessageId     string
 	Version             string
 	ConversationId      string
