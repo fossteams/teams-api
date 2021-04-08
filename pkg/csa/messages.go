@@ -32,7 +32,7 @@ type ChatMessageProperties struct {
 	Files                 string
 	Emotions              []Emotion
 	DeleteTime            int64 // TODO: Convert to time.Time ?
-	AdminDelete           *bool
+	AdminDelete           bool
 	S2SPartnerName        string
 	Mentions              string
 	Links                 string
@@ -40,8 +40,9 @@ type ChatMessageProperties struct {
 	CounterPartyMessageId int64
 	OriginContextId       int64
 	ParentMessageId       int64
-	SkipFanOutToBots      bool
+	SkipFanOutToBots      interface{} // Can be either string or bool, wtf?
 	Cards                 string
+	Importance            string
 }
 
 type AnnotationsSummary struct {
