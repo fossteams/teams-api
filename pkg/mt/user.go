@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/fossteams/teams-api/pkg"
 	"io/ioutil"
 	"net/http"
@@ -125,6 +126,15 @@ func (m *MTService) GetTenants() (*[]Tenant, error) {
 
 func (m *MTService) GetUser(email string) (*User, error) {
 	endpointUrl := m.getEndpoint("/users/" + url.PathEscape(email) + "/")
+
+	values := endpointUrl.Query()
+	values.Add("throwIfNotFound", "false")
+	values.Add("isMailAddress", "true")
+	values.Add("enableGuest", "true")
+	values.Add("includeIBBarredUsers", "true")
+	values.Add("skypeTeamsInfo", "true")
+	endpointUrl.RawQuery = values.Encode()
+
 	req, err := m.AuthenticatedRequest("GET", endpointUrl.String(), nil)
 	if err != nil {
 		return nil, err
@@ -147,6 +157,19 @@ func (m *MTService) GetUser(email string) (*User, error) {
 		return nil, err
 	}
 	return &userResp.Value, nil
+}
+
+func (m *MTService) GetMe() (*User, error) {
+	// Retrieve email from token
+	claims := m.token.Inner.Claims
+	var email string
+	switch claims.(type) {
+	case jwt.MapClaims:
+		email = claims.(jwt.MapClaims)["upn"].(string)
+	default:
+		return nil, fmt.Errorf("JWT token doesn't have MapClaims")
+	}
+	return m.GetUser(email)
 }
 
 type UsersResponse struct {

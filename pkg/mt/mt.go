@@ -15,8 +15,10 @@ type MTService struct {
 	client        *http.Client
 }
 
-func NewMiddleTierService(middleTierUrl string, region api.Region, token *api.TeamsToken) (*MTService, error) {
-	svcUrl, err := url.Parse(middleTierUrl)
+const MiddleTier = "https://teams.microsoft.com/api/mt/"
+
+func NewMiddleTierService(region api.Region, token *api.TeamsToken) (*MTService, error) {
+	svcUrl, err := url.Parse(MiddleTier)
 	if err != nil {
 		return nil, err
 	}

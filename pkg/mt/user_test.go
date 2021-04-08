@@ -17,8 +17,7 @@ func initTest(t *testing.T) *mt.MTService {
 		t.Error(err)
 	}
 	
-	const MiddleTier = "https://teams.microsoft.com/api/mt/"
-	userSvc, err := mt.NewMiddleTierService(MiddleTier, api.Emea, token)
+	userSvc, err := mt.NewMiddleTierService(api.Emea, token)
 
 	if err != nil {
 		t.Error(err)
@@ -34,6 +33,15 @@ func TestGetUser(t *testing.T){
 	user, err := userSvc.GetUser(userEmail)
 	assert.Nil(t, err)
 	assert.NotNil(t, user)
+}
+
+func TestGetMe(t *testing.T){
+	userSvc := initTest(t)
+
+	user, err := userSvc.GetMe()
+	assert.Nil(t, err)
+	assert.NotNil(t, user)
+	fmt.Printf("user=%#v\n", user)
 }
 
 func TestFetchShortProfiles(t *testing.T){

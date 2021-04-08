@@ -48,7 +48,7 @@ func GetSkypeToken() (*SkypeToken, error) {
 	}
 	skypeToken, err := authClient.Authz(rootToken, Refresh)
 	if err != nil {
-		return nil, fmt.Errorf("unable to get skypeToken: %v", err)
+		return nil, fmt.Errorf("authz refresh failed: %v", err)
 	}
 
 	skypeToken.Type = TokenSkype
@@ -96,22 +96,6 @@ func getToken(tokenType string) (*TeamsToken, error) {
 		Inner: jwtToken,
 		Type:  TokenBearer,
 	}, nil
-}
-
-func GetToken() (*TeamsToken, error) {
-	skypeRootToken, err := GetRootToken()
-	if err != nil {
-		return nil, fmt.Errorf("unable to get skype root token: %v", err)
-	}
-
-	// Call Authz
-	client := New(nil)
-	skypeToken, err := client.Authz(skypeRootToken, Refresh)
-	if err != nil {
-		return nil, fmt.Errorf("unable to get Skype Token: %v", err)
-	}
-
-	return skypeToken, nil
 }
 
 func GetRootToken() (*RootSkypeToken, error) {

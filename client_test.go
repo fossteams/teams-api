@@ -14,12 +14,9 @@ import (
 )
 
 func TestTeamsClient_GetConversations(t *testing.T) {
-	c, err := teams_api.New()
-	if err != nil {
-		t.Fatalf("unable to create teams client: %v", err)
-	}
-
+	c := mustGetClient(t)
 	c.Debug(true)
+
 	convs, err := c.GetConversations()
 	if err != nil {
 		t.Fatalf("unable to get conversations: %v", err)
@@ -47,12 +44,9 @@ func TestTeamsClient_GetConversations(t *testing.T) {
 }
 
 func TestTeamsClient_GetMessages(t *testing.T) {
-	c, err := teams_api.New()
-	if err != nil {
-		t.Fatalf("unable to create teams client: %v", err)
-	}
-
+	c := mustGetClient(t)
 	c.Debug(true)
+
 	convs, err := c.GetConversations()
 	if err != nil {
 		t.Fatalf("unable to get conversations: %v", err)
@@ -100,4 +94,28 @@ func TestTeamsClient_GetMessages(t *testing.T) {
 		}
 		fmt.Printf("\n")
 	}
+}
+
+func mustGetClient(t *testing.T) *teams_api.TeamsClient {
+	c, err := teams_api.New()
+	if err != nil {
+		t.Fatalf("unable to create teams client: %v", err)
+	}
+	return c
+}
+
+func TestTeamsClient_GetMe(t *testing.T) {
+	c := mustGetClient(t)
+	user, err := c.GetMe()
+	assert.Nil(t, err)
+	assert.NotNil(t, user)
+	fmt.Printf("user = %#v\n", user)
+}
+
+func TestTeamsClient_GetPinnedChannels(t *testing.T) {
+	c := mustGetClient(t)
+	pinnedChannels, err := c.GetPinnedChannels()
+	assert.Nil(t, err)
+	assert.NotNil(t, pinnedChannels)
+	fmt.Printf("pinnedChannels = %#v\n", pinnedChannels)
 }
