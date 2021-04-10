@@ -1,6 +1,7 @@
 package csa
 
 import (
+	api "github.com/fossteams/teams-api/pkg"
 	"time"
 )
 
@@ -169,8 +170,8 @@ type Message struct {
 	ImDisplayName           string
 	Id                      string
 	Type                    string
-	ComposeTime             time.Time
-	OriginalArrivalTime     time.Time
+	ComposeTime             api.RFC3339Time
+	OriginalArrivalTime     api.RFC3339Time
 	ContainerId             string
 	ParentMessageId         string
 	From                    string

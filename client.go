@@ -67,6 +67,10 @@ func (t *TeamsClient) GetMe() (*mt.User, error) {
 	return t.mtSvc.GetMe()
 }
 
+func (t *TeamsClient) FetchShortProfile(mris []string) (*[]mt.User, error){
+	return t.mtSvc.FetchShortProfile(mris...)
+}
+
 func (t *TeamsClient) GetPinnedChannels() ([]csa.ChannelId, error){
 	return t.chatSvc.GetPinnedChannels()
 }

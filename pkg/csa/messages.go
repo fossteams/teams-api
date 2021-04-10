@@ -6,12 +6,16 @@ import (
 	api "github.com/fossteams/teams-api/pkg"
 	"net/http"
 	"net/url"
+	"sort"
+	"time"
 )
 
 type ChatMessageType string
 
 const (
 	ChatMessageTypeMessage ChatMessageType = "Message"
+	EvenCall ChatMessageType = "Event/Call"
+	ThreadActivityAddMember ChatMessageType = "ThreadActivity/AddMember"
 )
 
 type UserEmotion struct {
@@ -27,6 +31,7 @@ type Emotion struct {
 
 type ChatMessageProperties struct {
 	Subject               string
+	Title                 string
 	EmailDetails          string
 	Meta                  string
 	Files                 string
@@ -43,6 +48,10 @@ type ChatMessageProperties struct {
 	SkipFanOutToBots      interface{} // Can be either string or bool, wtf?
 	Cards                 string
 	Importance            string
+	Atp                   string
+	CrossPostId           string
+	Meeting               string
+	SkpeGuid              string
 }
 
 type AnnotationsSummary struct {
@@ -66,8 +75,8 @@ type ChatMessage struct {
 	From                string
 	ImDisplayName       string
 	S2SPartnerName      string
-	ComposeTime         string // TODO: Parse as time.Time
-	OriginalArrivalTime string // TODO: Parse as time.Time
+	ComposeTime         api.RFC3339Time
+	OriginalArrivalTime api.RFC3339Time
 	Properties          ChatMessageProperties
 	AnnotationsSummary  AnnotationsSummary
 }
@@ -121,3 +130,21 @@ func (c *CSASvc) GetMessagesByChannel(channel *Channel) ([]ChatMessage, error) {
 
 	return msgResponse.Messages, err
 }
+
+type SortMessageByTime []ChatMessage
+
+func (s SortMessageByTime) Len() int {
+	return len(s)
+}
+
+func (s SortMessageByTime) Less(i, j int) bool {
+	ti := time.Time(s[i].ComposeTime)
+	tj := time.Time(s[j].ComposeTime)
+	return ti.Before(tj)
+}
+
+func (s SortMessageByTime) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+var _ sort.Interface = SortMessageByTime{}
