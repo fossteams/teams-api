@@ -29,3 +29,14 @@ Simply clone and `yarn start` that repository to get your Teams tokens stored in
 
 With these tokens, you'll be able to test out some features like the
 `GetConversations` test that retrieves a list of Teams your user is connected with.
+
+
+### Testing out
+
+I have created a Microsoft Team org with the free version that you can join
+and test out / help debugging / improve this library with.  
+  
+This would also be interesting because we can use it as a platform to discuss the
+API / CLI and it will help us implement more features related to multi-tenancy.
+
+[Join us now](https://teams.microsoft.com/join/w3ifka78r1ai)
