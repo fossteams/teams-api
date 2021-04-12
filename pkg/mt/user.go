@@ -6,8 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	api "github.com/fossteams/teams-api/pkg"
 	"github.com/fossteams/teams-api/pkg/errors"
 	"github.com/fossteams/teams-api/pkg/models"
+	"github.com/fossteams/teams-api/pkg/util"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -33,9 +35,16 @@ func (m *MTService) GetTenants() ([]models.Tenant, error) {
 		return nil, fmt.Errorf("invalid status code %d: resp = %s", resp.StatusCode, string(bodyString))
 	}
 
+	jsonReader, err := util.GetJSON(resp, m.debugSave)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read body: %v", err)
+	}
+
 	var tenant []models.Tenant
-	decoder := json.NewDecoder(resp.Body)
-	decoder.DisallowUnknownFields()
+	decoder := json.NewDecoder(jsonReader)
+	if m.debugDisallowUnknownFields {
+		decoder.DisallowUnknownFields()
+	}
 	err = decoder.Decode(&tenant)
 
 	if err != nil {
@@ -69,9 +78,16 @@ func (m *MTService) GetUser(email string) (*models.User, error) {
 		return nil, errors.NewHTTPError(expectedStatusCode, resp.StatusCode, nil)
 	}
 
+	jsonReader, err := util.GetJSON(resp, m.debugSave)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read body: %v", err)
+	}
+
 	var userResp models.UserResponse
-	dec := json.NewDecoder(resp.Body)
-	dec.DisallowUnknownFields()
+	dec := json.NewDecoder(jsonReader)
+	if m.debugDisallowUnknownFields {
+		dec.DisallowUnknownFields()
+	}
 	err = dec.Decode(&userResp)
 
 	if err != nil {
@@ -80,9 +96,11 @@ func (m *MTService) GetUser(email string) (*models.User, error) {
 	return &userResp.Value, nil
 }
 
-func (m *MTService) GetMe() (*models.User, error) {
-	// Retrieve email from token
-	claims := m.token.Inner.Claims
+func GetTokenEmail(token *api.TeamsToken) (string, error) {
+	if token == nil {
+		return "", fmt.Errorf("invalid token provided (nil)")
+	}
+	claims := token.Inner.Claims
 	var email string
 	switch claims.(type) {
 	case jwt.MapClaims:
@@ -90,16 +108,24 @@ func (m *MTService) GetMe() (*models.User, error) {
 		val, ok := mapClaims["email"]
 		if ok {
 			email = val.(string)
-			break
+			return email, nil
 		}
 		val, ok = mapClaims["upn"]
 		if ok {
 			email = val.(string)
-			break
+			return email, nil
 		}
-		return nil, fmt.Errorf("JWT doesn't contain email nor upn")
+		return "", fmt.Errorf("JWT doesn't contain email nor upn")
 	default:
-		return nil, fmt.Errorf("JWT doesn't have MapClaims")
+		return "", fmt.Errorf("JWT doesn't have MapClaims")
+	}
+}
+
+func (m *MTService) GetMe() (*models.User, error) {
+	// Retrieve email from token
+	email, err := GetTokenEmail(m.token)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get email from token: %v", err)
 	}
 	return m.GetUser(email)
 }
@@ -140,9 +166,16 @@ func (m *MTService) FetchShortProfile(mri ...string) ([]models.User, error) {
 		return nil, errors.NewHTTPError(expectedStatusCode, resp.StatusCode, nil)
 	}
 
+	jsonReader, err := util.GetJSON(resp, m.debugSave)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read body: %v", err)
+	}
+
 	var userResp UsersResponse
-	dec := json.NewDecoder(resp.Body)
-	dec.DisallowUnknownFields()
+	dec := json.NewDecoder(jsonReader)
+	if m.debugDisallowUnknownFields {
+		dec.DisallowUnknownFields()
+	}
 	err = dec.Decode(&userResp)
 
 	if err != nil {

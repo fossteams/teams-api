@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/fossteams/teams-api/pkg/errors"
+	"github.com/fossteams/teams-api/pkg/util"
 	"io"
 	"net/http"
 	"net/url"
@@ -54,7 +55,7 @@ func (c *CSASvc) authenticatedGetRequest(endpointUrl *url.URL) (io.Reader, error
 		return nil, errors.NewHTTPError(expectedStatusCode, resp.StatusCode, nil)
 	}
 
-	jsonBuffer, err := c.getJSON(resp)
+	jsonBuffer, err := util.GetJSON(resp, c.debugSave)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read JSON: %v", err)
 	}

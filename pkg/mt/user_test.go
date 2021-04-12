@@ -1,9 +1,10 @@
 package mt_test
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/fossteams/teams-api/pkg"
+	"github.com/fossteams/teams-api/pkg/models"
 	"github.com/fossteams/teams-api/pkg/mt"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
@@ -28,7 +29,9 @@ func initTest(t *testing.T) *mt.MTService {
 
 func TestGetUser(t *testing.T){
 	userSvc := initTest(t)
-	email, err := getTokenEMail(t)
+	userSvc.DebugDisallowUnknownFields(true)
+	userSvc.DebugSave(true)
+	email, err := getTokenEmail(t)
 	user, err := userSvc.GetUser(email)
 	assert.Nil(t, err)
 	assert.NotNil(t, user)
@@ -36,14 +39,42 @@ func TestGetUser(t *testing.T){
 	assert.Equal(t, email, user.Email)
 }
 
-func getTokenEMail(t *testing.T) (string, error) {
+func TestParseUsersResponse(t *testing.T) {
+	f, err := os.Open("../../resources/mt/user/user-1.json")
+	defer f.Close()
+	if err != nil {
+		t.Fatalf("unable to open file: %v", err)
+	}
+
+	var user models.User
+	dec := json.NewDecoder(f)
+
+	err = dec.Decode(&user)
+	dec.DisallowUnknownFields()
+	if err != nil {
+		t.Fatalf("unable to decode JSON: %v", err)
+	}
+	fmt.Printf("user:\n%+v\n", user)
+	assert.NotNil(t, user)
+	assert.Equal(t, "Denys", user.GivenName)
+	assert.Equal(t, "Vitali", user.Surname)
+	assert.Equal(t, "Denys Vitali", user.DisplayName)
+	assert.Equal(t, "teamscli@outlook.com", user.Email)
+	assert.True(t, user.SkypeTeamsInfo.IsSkypeTeamsUser)
+	assert.True(t, user.AccountEnabled)
+	assert.True(t, user.IsSipDisabled)
+	assert.False(t, user.IsShortProfile)
+	assert.Equal(t, "8:orgid:fa814989-41d0-4d4b-a365-e5f44e406847", user.Mri)
+}
+
+
+func getTokenEmail(t *testing.T) (string, error) {
 	rootToken, err := api.GetRootToken()
 	if err != nil {
 		t.Fatalf("unable to get root token: %v", err)
 	}
 
-	email := rootToken.Inner.Claims.(jwt.MapClaims)["upn"].(string)
-	return email, err
+	return mt.GetTokenEmail(rootToken)
 }
 
 func TestGetMe(t *testing.T){
@@ -78,7 +109,7 @@ func TestFetchShortProfiles(t *testing.T){
 
 func TestGetUserProfilePicture(t *testing.T){
 	userSvc := initTest(t)
-	email, err := getTokenEMail(t)
+	email, err := getTokenEmail(t)
 
 	profilePicture, err := userSvc.GetProfilePicture(email)
 	assert.Nil(t, err)

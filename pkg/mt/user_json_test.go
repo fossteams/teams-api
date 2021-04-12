@@ -3,6 +3,7 @@ package mt
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/fossteams/teams-api/pkg/models"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -62,7 +63,7 @@ func TestUserJson(t *testing.T) {
 	decoder := json.NewDecoder(bytesReader)
 	decoder.DisallowUnknownFields()
 	
-	var userResp UserResponse
+	var userResp models.UserResponse
 	err := decoder.Decode(&userResp)
 	assert.Nil(t, err)
 

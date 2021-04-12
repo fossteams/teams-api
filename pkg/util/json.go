@@ -1,4 +1,4 @@
-package csa
+package util
 
 import (
 	"bytes"
@@ -9,10 +9,10 @@ import (
 	"os"
 )
 
-func (c *CSASvc) getJSON(resp *http.Response) (io.Reader, error) {
+func GetJSON(resp *http.Response, debugSave bool) (io.Reader, error) {
 	var jsonBuffer io.Reader
 
-	if c.debugSave {
+	if debugSave {
 		// Temporary save response
 		f, err := ioutil.TempFile(os.TempDir(), "teams-*.json")
 		if err != nil {

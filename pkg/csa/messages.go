@@ -5,6 +5,7 @@ import (
 	"fmt"
 	api "github.com/fossteams/teams-api/pkg"
 	"github.com/fossteams/teams-api/pkg/errors"
+	"github.com/fossteams/teams-api/pkg/util"
 	"net/http"
 	"net/url"
 	"sort"
@@ -117,7 +118,7 @@ func (c *CSASvc) GetMessagesByChannel(channel *Channel) ([]ChatMessage, error) {
 		return nil, errors.NewHTTPError(expectedStatusCode, resp.StatusCode, nil)
 	}
 
-	jsonBuffer, err := c.getJSON(resp)
+	jsonBuffer, err := util.GetJSON(resp, c.debugSave)
 	if err != nil {
 		return nil, err
 	}
