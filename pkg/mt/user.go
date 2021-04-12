@@ -86,9 +86,20 @@ func (m *MTService) GetMe() (*models.User, error) {
 	var email string
 	switch claims.(type) {
 	case jwt.MapClaims:
-		email = claims.(jwt.MapClaims)["upn"].(string)
+		mapClaims := claims.(jwt.MapClaims)
+		val, ok := mapClaims["email"]
+		if ok {
+			email = val.(string)
+			break
+		}
+		val, ok = mapClaims["upn"]
+		if ok {
+			email = val.(string)
+			break
+		}
+		return nil, fmt.Errorf("JWT doesn't contain email nor upn")
 	default:
-		return nil, fmt.Errorf("JWT token doesn't have MapClaims")
+		return nil, fmt.Errorf("JWT doesn't have MapClaims")
 	}
 	return m.GetUser(email)
 }
