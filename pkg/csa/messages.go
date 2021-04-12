@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	api "github.com/fossteams/teams-api/pkg"
+	"github.com/fossteams/teams-api/pkg/errors"
 	"net/http"
 	"net/url"
 	"sort"
@@ -13,8 +14,8 @@ import (
 type ChatMessageType string
 
 const (
-	ChatMessageTypeMessage ChatMessageType = "Message"
-	EvenCall ChatMessageType = "Event/Call"
+	ChatMessageTypeMessage  ChatMessageType = "Message"
+	EvenCall                ChatMessageType = "Event/Call"
 	ThreadActivityAddMember ChatMessageType = "ThreadActivity/AddMember"
 )
 
@@ -51,7 +52,7 @@ type ChatMessageProperties struct {
 	Atp                   string
 	CrossPostId           string
 	Meeting               string
-	SkpeGuid              string
+	SkypeGuid             string
 }
 
 type AnnotationsSummary struct {
@@ -111,8 +112,9 @@ func (c *CSASvc) GetMessagesByChannel(channel *Channel) ([]ChatMessage, error) {
 		return nil, err
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, api.InvalidResponseError(resp)
+	expectedStatusCode := http.StatusOK
+	if resp.StatusCode != expectedStatusCode {
+		return nil, errors.NewHTTPError(expectedStatusCode, resp.StatusCode, nil)
 	}
 
 	jsonBuffer, err := c.getJSON(resp)
@@ -122,7 +124,9 @@ func (c *CSASvc) GetMessagesByChannel(channel *Channel) ([]ChatMessage, error) {
 
 	var msgResponse MessagesResponse
 	dec := json.NewDecoder(jsonBuffer)
-	dec.DisallowUnknownFields()
+	if c.debugDisallowUnknownFields {
+		dec.DisallowUnknownFields()
+	}
 	err = dec.Decode(&msgResponse)
 	if err != nil {
 		return nil, fmt.Errorf("unable to decode json: %v", err)

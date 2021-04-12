@@ -11,7 +11,7 @@ func TestGetTenants(t *testing.T){
 	tenants, err := userSvc.GetTenants()
 	assert.Nil(t, err)
 	assert.NotNil(t, tenants)
-	assert.GreaterOrEqual(t, 1, len(*tenants))
+	assert.GreaterOrEqual(t, 1, len(tenants))
 }
 
 func TestGetVerifiedDomains(t *testing.T){

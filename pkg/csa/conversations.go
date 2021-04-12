@@ -3,7 +3,7 @@ package csa
 import (
 	"encoding/json"
 	"fmt"
-	api "github.com/fossteams/teams-api/pkg"
+	"github.com/fossteams/teams-api/pkg/errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -26,7 +26,9 @@ func (c *CSASvc) GetConversations() (*ConversationResponse, error) {
 
 	var teams ConversationResponse
 	decoder := json.NewDecoder(jsonBuffer)
-	// decoder.DisallowUnknownFields()
+	if c.debugDisallowUnknownFields {
+		decoder.DisallowUnknownFields()
+	}
 	err = decoder.Decode(&teams)
 
 	if err != nil {
@@ -47,8 +49,9 @@ func (c *CSASvc) authenticatedGetRequest(endpointUrl *url.URL) (io.Reader, error
 		return nil, err
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, api.InvalidResponseError(resp)
+	expectedStatusCode := http.StatusOK
+	if resp.StatusCode != expectedStatusCode {
+		return nil, errors.NewHTTPError(expectedStatusCode, resp.StatusCode, nil)
 	}
 
 	jsonBuffer, err := c.getJSON(resp)
@@ -58,10 +61,6 @@ func (c *CSASvc) authenticatedGetRequest(endpointUrl *url.URL) (io.Reader, error
 
 	return jsonBuffer, nil
 }
-
-
-
-
 
 type TeamsByName []Team
 

@@ -3,6 +3,7 @@ package teams_api
 import (
 	"fmt"
 	"github.com/fossteams/teams-api/pkg/csa"
+	"github.com/fossteams/teams-api/pkg/models"
 	"github.com/fossteams/teams-api/pkg/mt"
 	"net/http"
 )
@@ -14,8 +15,8 @@ type TeamsClient struct {
 	mtSvc *mt.MTService
 }
 
-func (c *TeamsClient) Debug(debugFlag bool) {
-	c.chatSvc.DebugSave(debugFlag)
+func (t *TeamsClient) Debug(debugFlag bool) {
+	t.chatSvc.DebugSave(debugFlag)
 }
 
 func New() (*TeamsClient, error) {
@@ -55,20 +56,24 @@ func New() (*TeamsClient, error) {
 	return &teamsClient, err
 }
 
-func (t *TeamsClient) GetConversations() (*csa.ConversationResponse, error) {
+func (t TeamsClient) GetConversations() (*csa.ConversationResponse, error) {
 	return t.chatSvc.GetConversations()
 }
 
-func (t *TeamsClient) GetMessages(channel *csa.Channel) ([]csa.ChatMessage, error) {
+func (t TeamsClient) GetMessages(channel *csa.Channel) ([]csa.ChatMessage, error) {
 	return t.chatSvc.GetMessagesByChannel(channel)
 }
 
-func (t *TeamsClient) GetMe() (*mt.User, error) {
+func (t TeamsClient) GetMe() (*models.User, error) {
 	return t.mtSvc.GetMe()
 }
 
-func (t *TeamsClient) FetchShortProfile(mris []string) (*[]mt.User, error){
+func (t TeamsClient) FetchShortProfile(mris []string) ([]models.User, error) {
 	return t.mtSvc.FetchShortProfile(mris...)
+}
+
+func (t TeamsClient) GetTenants() ([]models.Tenant, error){
+	return t.mtSvc.GetTenants()
 }
 
 func (t *TeamsClient) GetPinnedChannels() ([]csa.ChannelId, error){

@@ -46,9 +46,9 @@ func GetSkypeToken() (*SkypeToken, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to get root token: %v", err)
 	}
-	skypeToken, err := authClient.Authz(rootToken, Refresh)
+	skypeToken, err := authClient.Authz(rootToken, AuthzRefresh)
 	if err != nil {
-		return nil, fmt.Errorf("authz refresh failed: %v", err)
+		return nil, err
 	}
 
 	skypeToken.Type = TokenSkype

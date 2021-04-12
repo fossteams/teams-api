@@ -2,12 +2,12 @@ package mt_test
 
 import (
 	"fmt"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/fossteams/teams-api/pkg"
 	"github.com/fossteams/teams-api/pkg/mt"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
-	"strings"
 	"testing"
 )
 
@@ -28,11 +28,22 @@ func initTest(t *testing.T) *mt.MTService {
 
 func TestGetUser(t *testing.T){
 	userSvc := initTest(t)
-
-	userEmail := os.Getenv("MS_TEAMS_USER_EMAIL")
-	user, err := userSvc.GetUser(userEmail)
+	email, err := getTokenEMail(t)
+	user, err := userSvc.GetUser(email)
 	assert.Nil(t, err)
 	assert.NotNil(t, user)
+	fmt.Printf("user=%#v", user)
+	assert.Equal(t, email, user.Email)
+}
+
+func getTokenEMail(t *testing.T) (string, error) {
+	rootToken, err := api.GetRootToken()
+	if err != nil {
+		t.Fatalf("unable to get root token: %v", err)
+	}
+
+	email := rootToken.Inner.Claims.(jwt.MapClaims)["upn"].(string)
+	return email, err
 }
 
 func TestGetMe(t *testing.T){
@@ -46,20 +57,30 @@ func TestGetMe(t *testing.T){
 
 func TestFetchShortProfiles(t *testing.T){
 	userSvc := initTest(t)
+	user, err := userSvc.GetMe()
+	if err != nil {
+		t.Fatalf("unable to get me: %v", err)
+	}
 
-	mrisEnv := os.Getenv("MS_TEAMS_MRIS")
-	mris := strings.Split(mrisEnv, ",")
-	
-	user, err := userSvc.FetchShortProfile(mris...)
+	mris := []string{user.Mri}
+
+	users, err := userSvc.FetchShortProfile(mris...)
 	assert.Nil(t, err)
-	assert.NotNil(t, user)
+	assert.NotNil(t, users)
+	assert.Equal(t, 1, len(users))
+
+	assert.Equal(t, user.Email, users[0].Email)
+	assert.Equal(t, user.DisplayName, users[0].DisplayName)
+
+	fmt.Printf("users=%#v\n", users)
+
 }
 
 func TestGetUserProfilePicture(t *testing.T){
 	userSvc := initTest(t)
+	email, err := getTokenEMail(t)
 
-	userEmail := os.Getenv("MS_TEAMS_USER_EMAIL")
-	profilePicture, err := userSvc.GetProfilePicture(userEmail)
+	profilePicture, err := userSvc.GetProfilePicture(email)
 	assert.Nil(t, err)
 	assert.NotNil(t, profilePicture)
 	assert.Greater(t, len(profilePicture), 0)

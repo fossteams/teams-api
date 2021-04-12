@@ -6,94 +6,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/fossteams/teams-api/pkg"
+	"github.com/fossteams/teams-api/pkg/errors"
+	"github.com/fossteams/teams-api/pkg/models"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 )
 
-type UserResponse struct {
-	Value User   `json:"value"`
-	Type  string `json:"type"`
-}
-
-type SkypeTeamsInfo struct {
-	IsSkypeTeamsUser bool
-}
-
-type FeatureSettings struct {
-	IsPrivateChatEnabled           bool
-	EnableShiftPresence            bool
-	CoExistenceMode                string
-	EnableScheduleOwnerPermissions bool
-}
-
-type PhoneType string
-
-const (
-	MobilePhone PhoneType = "Mobile"
-)
-
-type Phone struct {
-	Type   PhoneType `json:"type"`
-	Number string    `json:"number"`
-}
-
-type User struct {
-	Alias                      string          `json:"alias"`
-	AccountEnabled             bool            `json:"accountEnabled,omitempty"`
-	Department                 string          `json:"department,omitempty"`
-	DisplayName                string          `json:"displayName"`
-	Email                      string          `json:"email"`
-	FeatureSettings            FeatureSettings `json:"featureSettings,omitempty"`
-	GivenName                  string          `json:"givenName"`
-	IsShortProfile             bool            `json:"isShortProfile"`
-	IsSipDisabled              bool            `json:"isSipDisabled,omitempty"`
-	JobTitle                   string          `json:"jobTitle"`
-	Mail                       string          `json:"mail,omitempty"`
-	Mobile                     string          `json:"mobile,omitempty"`
-	Mri                        string          `json:"mri,omitempty"`
-	ObjectId                   string          `json:"objectId"`
-	ObjectType                 string          `json:"objectType,omitempty"`
-	Phones                     []Phone         `json:"phones,omitempty"`
-	PhysicalDeliveryOfficeName string          `json:"physicalDeliveryOfficeName,omitempty"`
-	PreferredLanguage          string          `json:"preferredLanguage,omitempty"`
-	ResponseSourceInformation  string          `json:"responseSourceInformation,omitempty"`
-	ShowInAddressList          bool            `json:"showInAddressList,omitempty"`
-	SipProxyAddress            string          `json:"sipProxyAddress,omitempty"`
-	SkypeTeamsInfo             SkypeTeamsInfo  `json:"skypeTeamsInfo,omitempty"`
-	SmtpAddresses              []string        `json:"smtpAddresses,omitempty"`
-	Surname                    string          `json:"surname"`
-	TelephoneNumber            string          `json:"telephoneNumber,omitempty"`
-	Type                       string          `json:"type"`
-	UserLocation               string          `json:"userLocation"`
-	UserPrincipalName          string          `json:"userPrincipalName"`
-	UserType                   string          `json:"userType,omitempty"`
-}
-
-type UserType string
-
-const (
-	Member UserType = "member"
-)
-
-type TenantType string
-
-const (
-	Organization TenantType = "organization"
-)
-
-type Tenant struct {
-	TenantID             string     `json:"tenantId"`
-	TenantName           string     `json:"tenantName"`
-	UserId               string     `json:"userId"`
-	IsInvitationRedeemed bool       `json:"isInvitationRedeemed"`
-	CountryLetterCode    string     `json:"countryLetterCode"`
-	UserType             UserType   `json:"userType"`
-	TenantType           TenantType `json:"tenantType"`
-}
-
-func (m *MTService) GetTenants() (*[]Tenant, error) {
+func (m *MTService) GetTenants() ([]models.Tenant, error) {
 	endpointUrl := m.getEndpoint("/users/tenants")
 	req, err := m.AuthenticatedRequest("GET", endpointUrl.String(), nil)
 	if err != nil {
@@ -113,7 +33,7 @@ func (m *MTService) GetTenants() (*[]Tenant, error) {
 		return nil, fmt.Errorf("invalid status code %d: resp = %s", resp.StatusCode, string(bodyString))
 	}
 
-	var tenant []Tenant
+	var tenant []models.Tenant
 	decoder := json.NewDecoder(resp.Body)
 	decoder.DisallowUnknownFields()
 	err = decoder.Decode(&tenant)
@@ -121,10 +41,10 @@ func (m *MTService) GetTenants() (*[]Tenant, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &tenant, nil
+	return tenant, nil
 }
 
-func (m *MTService) GetUser(email string) (*User, error) {
+func (m *MTService) GetUser(email string) (*models.User, error) {
 	endpointUrl := m.getEndpoint("/users/" + url.PathEscape(email) + "/")
 
 	values := endpointUrl.Query()
@@ -144,11 +64,12 @@ func (m *MTService) GetUser(email string) (*User, error) {
 		return nil, err
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, api.InvalidResponseError(resp)
+	expectedStatusCode := http.StatusOK
+	if resp.StatusCode != expectedStatusCode {
+		return nil, errors.NewHTTPError(expectedStatusCode, resp.StatusCode, nil)
 	}
 
-	var userResp UserResponse
+	var userResp models.UserResponse
 	dec := json.NewDecoder(resp.Body)
 	dec.DisallowUnknownFields()
 	err = dec.Decode(&userResp)
@@ -159,7 +80,7 @@ func (m *MTService) GetUser(email string) (*User, error) {
 	return &userResp.Value, nil
 }
 
-func (m *MTService) GetMe() (*User, error) {
+func (m *MTService) GetMe() (*models.User, error) {
 	// Retrieve email from token
 	claims := m.token.Inner.Claims
 	var email string
@@ -173,11 +94,11 @@ func (m *MTService) GetMe() (*User, error) {
 }
 
 type UsersResponse struct {
-	Value []User `json:"value"`
+	Value []models.User `json:"value"`
 	Type  string `json:"type"`
 }
 
-func (m *MTService) FetchShortProfile(mri ...string) (*[]User, error) {
+func (m *MTService) FetchShortProfile(mri ...string) ([]models.User, error) {
 	endpointUrl := m.getEndpoint("/users/fetchShortProfile")
 	values := endpointUrl.Query()
 	values.Add("isMailAddress", "false")
@@ -197,13 +118,15 @@ func (m *MTService) FetchShortProfile(mri ...string) (*[]User, error) {
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Add("Content-Type", "application/json")
 	resp, err := m.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, api.InvalidResponseError(resp)
+	expectedStatusCode := http.StatusOK
+	if resp.StatusCode != expectedStatusCode {
+		return nil, errors.NewHTTPError(expectedStatusCode, resp.StatusCode, nil)
 	}
 
 	var userResp UsersResponse
@@ -214,7 +137,7 @@ func (m *MTService) FetchShortProfile(mri ...string) (*[]User, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &userResp.Value, nil
+	return userResp.Value, nil
 }
 
 func (m *MTService) GetProfilePicture(email string) ([]byte, error) {

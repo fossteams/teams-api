@@ -10,16 +10,18 @@ import (
 )
 
 type CSASvc struct {
-	token      *api.TeamsToken
-	csaSvcUrl  *url.URL
-	msgUrl     *url.URL
-	client     *http.Client
-	debugSave  bool
-	skypeToken *api.TeamsToken
+	token                      *api.TeamsToken
+	csaSvcUrl                  *url.URL
+	msgUrl                     *url.URL
+	client                     *http.Client
+	debugSave                  bool
+	skypeToken                 *api.TeamsToken
+	debugDisallowUnknownFields bool
 }
 
 const ChatSvcAgg = "https://teams.microsoft.com/api/csa/api/"
 const MessagesHost = "https://emea.ng.msg.teams.microsoft.com/"
+
 // Requires an aud:https://chatsvcagg.teams.microsoft.com token
 
 func NewCSAService(token *api.TeamsToken, skypeToken *api.SkypeToken) (*CSASvc, error) {
@@ -45,24 +47,29 @@ func NewCSAService(token *api.TeamsToken, skypeToken *api.SkypeToken) (*CSASvc, 
 	client := http.DefaultClient
 
 	return &CSASvc{
-		csaSvcUrl: svcUrl,
-		msgUrl: msgUrl,
-		token:     token,
-		skypeToken: skypeToken,
-		client:    client,
+		csaSvcUrl:                  svcUrl,
+		msgUrl:                     msgUrl,
+		token:                      token,
+		skypeToken:                 skypeToken,
+		client:                     client,
+		debugDisallowUnknownFields: false,
 	}, nil
 }
 
-func (c *CSASvc) DebugSave(debugFlag bool){
+func (c *CSASvc) DebugSave(debugFlag bool) {
 	c.debugSave = debugFlag
 }
 
+func (c *CSASvc) DebugDisallowUnknownFields(debugFlag bool) {
+	c.debugDisallowUnknownFields = debugFlag
+}
+
 type EndpointType string
+
 const (
 	EndpointChatSvcAgg EndpointType = "chatsvcagg"
-	EndpointMessages EndpointType = "messages"
+	EndpointMessages   EndpointType = "messages"
 )
-
 
 func (c *CSASvc) getEndpoint(t EndpointType, path string) *url.URL {
 	if strings.HasPrefix(path, "/") {

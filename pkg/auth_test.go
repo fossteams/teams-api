@@ -30,7 +30,7 @@ func TestRefreshToken(t *testing.T){
 	if err != nil {
 		t.Fatalf("unable to get root token: %v", err)
 	}
-	skypeJwt, err := authzClient.Authz(rootToken, Refresh)
+	skypeJwt, err := authzClient.Authz(rootToken, AuthzRefresh)
 	if err != nil {
 		t.Fatalf("unable to get refresh token: %v", err)
 	}

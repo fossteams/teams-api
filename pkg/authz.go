@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/fossteams/teams-api/pkg/errors"
 	"io"
 	"net/http"
 	"reflect"
@@ -109,32 +110,38 @@ func New(client *http.Client) AuthClient {
 type AuthzType = string
 
 const (
-	Refresh AuthzType = "TokenRefresh"
+	AuthzRefresh AuthzType = "TokenRefresh"
 )
 
-func (a *AuthClient) Authz(token *RootSkypeToken, authzType AuthzType) (*SkypeToken, error) {
-	req, err := http.NewRequest("POST", TEAMS_API_ENDPOINT+ "/authsvc/v1.0/authz", nil)
+func (a AuthClient) Authz(token *RootSkypeToken, authzType AuthzType) (*SkypeToken, error) {
+	req, err := http.NewRequest("POST", TEAMS_API_ENDPOINT+"/authsvc/v1.0/authz", nil)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create Authz request: %v", err)
 	}
 
 	req.Header.Add("ms-teams-authz-type", authzType)
-	req.Header.Add("Authorization", "Bearer " + token.Inner.Raw)
+	req.Header.Add("Authorization", "Bearer "+token.Inner.Raw)
 	resp, err := a.client.Do(req)
 
 	if err != nil {
 		return nil, fmt.Errorf("unable to perform authz request: %v", err)
 	}
 
-	if resp.StatusCode != http.StatusOK {
+	expectedResponseCode := http.StatusOK
+	if resp.StatusCode != expectedResponseCode {
 		bodyBytes, readErr := io.ReadAll(resp.Body)
 		if readErr != nil {
-			return nil, fmt.Errorf("invalid status code returned: 200 expected but %d returned", resp.StatusCode)
+			return nil, errors.NewHTTPError(expectedResponseCode, resp.StatusCode, nil)
 		}
-		return nil, fmt.Errorf("invalid status code returned: 200 expected but %d returned: %v",
-			resp.StatusCode,
-			string(bodyBytes),
-		)
+
+		// Parse response
+		var errorResponse AuthzError
+		err = json.Unmarshal(bodyBytes, &errorResponse)
+		if err != nil {
+			return nil, errors.NewHTTPError(expectedResponseCode, resp.StatusCode, bodyBytes)
+		}
+
+		return nil, errorResponse
 	}
 
 	dec := json.NewDecoder(resp.Body)
