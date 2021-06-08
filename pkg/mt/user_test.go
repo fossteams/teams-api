@@ -46,20 +46,28 @@ func TestParseUsersResponse(t *testing.T) {
 		t.Fatalf("unable to open file: %v", err)
 	}
 
+	var typedEntry = struct {
+		Value models.User
+		Type string
+	}{}
+
 	var user models.User
 	dec := json.NewDecoder(f)
-
-	err = dec.Decode(&user)
 	dec.DisallowUnknownFields()
+	err = dec.Decode(&typedEntry)
 	if err != nil {
 		t.Fatalf("unable to decode JSON: %v", err)
 	}
-	fmt.Printf("user:\n%+v\n", user)
+
+	assert.Equal(t, "Microsoft.SkypeSpaces.MiddleTier.Models.AadMember", typedEntry.Type)
+	user = typedEntry.Value
+
+	fmt.Printf("user:%+v\n", user)
 	assert.NotNil(t, user)
 	assert.Equal(t, "Denys", user.GivenName)
 	assert.Equal(t, "Vitali", user.Surname)
 	assert.Equal(t, "Denys Vitali", user.DisplayName)
-	assert.Equal(t, "teamscli@outlook.com", user.Email)
+	assert.Equal(t, "teams-cli@outlook.com", user.Email)
 	assert.True(t, user.SkypeTeamsInfo.IsSkypeTeamsUser)
 	assert.True(t, user.AccountEnabled)
 	assert.True(t, user.IsSipDisabled)
