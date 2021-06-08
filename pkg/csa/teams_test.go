@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
+
 func initTest(t *testing.T) *csa.CSASvc {
 	token, err := api.GetChatSvcAggToken()
 	if err != nil {

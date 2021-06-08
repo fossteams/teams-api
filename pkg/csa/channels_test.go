@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestGetMessagesByChannel(t *testing.T){
+func TestGetMessagesByChannel(t *testing.T) {
 	csaSvc := initTest(t)
 	csaSvc.DebugSave(true)
 
@@ -14,7 +14,6 @@ func TestGetMessagesByChannel(t *testing.T){
 	if err != nil {
 		t.Fatalf("unable to get conversations: %v", err)
 	}
-
 
 	assert.NotNil(t, conversations)
 	assert.Greater(t, len(conversations.Chats), 0)
@@ -27,7 +26,6 @@ func TestGetMessagesByChannel(t *testing.T){
 
 	assert.Greater(t, len(messages), 0)
 }
-
 
 func TestGetPinnedChannels(t *testing.T) {
 	csaSvc := initTest(t)

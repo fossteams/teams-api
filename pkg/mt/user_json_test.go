@@ -58,11 +58,11 @@ func TestUserJson(t *testing.T) {
 	  },
 	  "type": "Microsoft.SkypeSpaces.MiddleTier.Models.AadMember"
 	}`
-	
+
 	bytesReader := bytes.NewReader([]byte(resp))
 	decoder := json.NewDecoder(bytesReader)
 	decoder.DisallowUnknownFields()
-	
+
 	var userResp models.UserResponse
 	err := decoder.Decode(&userResp)
 	assert.Nil(t, err)

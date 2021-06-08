@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func TestGetTenants(t *testing.T){
+func TestGetTenants(t *testing.T) {
 	userSvc := initTest(t)
 	userSvc.DebugSave(true)
 	userSvc.DebugDisallowUnknownFields(true)
@@ -43,11 +43,11 @@ func TestParseTenantsResponse(t *testing.T) {
 	assert.Equal(t, models.Organization, tenants[0].TenantType)
 }
 
-func TestGetVerifiedDomains(t *testing.T){
+func TestGetVerifiedDomains(t *testing.T) {
 	userSvc := initTest(t)
 
 	verifiedDomains, err := userSvc.GetVerifiedDomains()
 	assert.Nil(t, err)
 	assert.NotNil(t, verifiedDomains)
-	assert.GreaterOrEqual(t,  len(*verifiedDomains), 0)
+	assert.GreaterOrEqual(t, len(*verifiedDomains), 0)
 }

@@ -11,8 +11,8 @@ import "github.com/fossteams/teams-api/pkg"
 
 type TeamsClient struct {
 	httpClient *http.Client
-	chatSvc *csa.CSASvc
-	mtSvc *mt.MTService
+	chatSvc    *csa.CSASvc
+	mtSvc      *mt.MTService
 }
 
 func (t *TeamsClient) Debug(debugFlag bool) {
@@ -45,7 +45,6 @@ func New() (*TeamsClient, error) {
 	}
 	teamsClient.chatSvc = csaSvc
 
-
 	// Initialize MT Service
 	mtSvc, err := mt.NewMiddleTierService(api.Emea, skypeSpaces)
 	if err != nil {
@@ -72,10 +71,10 @@ func (t TeamsClient) FetchShortProfile(mris []string) ([]models.User, error) {
 	return t.mtSvc.FetchShortProfile(mris...)
 }
 
-func (t TeamsClient) GetTenants() ([]models.Tenant, error){
+func (t TeamsClient) GetTenants() ([]models.Tenant, error) {
 	return t.mtSvc.GetTenants()
 }
 
-func (t *TeamsClient) GetPinnedChannels() ([]csa.ChannelId, error){
+func (t *TeamsClient) GetPinnedChannels() ([]csa.ChannelId, error) {
 	return t.chatSvc.GetPinnedChannels()
 }

@@ -10,7 +10,7 @@ import (
 type ChannelId string
 
 type PinnedChannelsResponse struct {
-	OrderVersion int
+	OrderVersion    int
 	PinChannelOrder []ChannelId
 }
 
@@ -31,7 +31,6 @@ func (c *CSASvc) GetPinnedChannels() ([]ChannelId, error) {
 	}
 	return pinnedChannelResponse.PinChannelOrder, nil
 }
-
 
 type ChannelsByName []Channel
 

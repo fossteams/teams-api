@@ -77,7 +77,7 @@ func getToken(tokenType string) (*TeamsToken, error) {
 			return nil, fmt.Errorf("cannot retrieve user homedir")
 		}
 
-		jwtPath := path.Join(homeDir, ".config/fossteams/token-" + tokenType + ".jwt")
+		jwtPath := path.Join(homeDir, ".config/fossteams/token-"+tokenType+".jwt")
 		f, err := os.Open(jwtPath)
 		if err != nil {
 			return nil, fmt.Errorf("unable to open %s: %v", jwtPath, err)

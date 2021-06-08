@@ -17,7 +17,7 @@ func initTest(t *testing.T) *mt.MTService {
 	if err != nil {
 		t.Error(err)
 	}
-	
+
 	userSvc, err := mt.NewMiddleTierService(api.Emea, token)
 
 	if err != nil {
@@ -27,7 +27,7 @@ func initTest(t *testing.T) *mt.MTService {
 	return userSvc
 }
 
-func TestGetUser(t *testing.T){
+func TestGetUser(t *testing.T) {
 	userSvc := initTest(t)
 	userSvc.DebugDisallowUnknownFields(true)
 	userSvc.DebugSave(true)
@@ -48,7 +48,7 @@ func TestParseUsersResponse(t *testing.T) {
 
 	var typedEntry = struct {
 		Value models.User
-		Type string
+		Type  string
 	}{}
 
 	var user models.User
@@ -75,7 +75,6 @@ func TestParseUsersResponse(t *testing.T) {
 	assert.Equal(t, "8:orgid:fa814989-41d0-4d4b-a365-e5f44e406847", user.Mri)
 }
 
-
 func getTokenEmail(t *testing.T) (string, error) {
 	rootToken, err := api.GetRootToken()
 	if err != nil {
@@ -85,7 +84,7 @@ func getTokenEmail(t *testing.T) (string, error) {
 	return mt.GetTokenEmail(rootToken)
 }
 
-func TestGetMe(t *testing.T){
+func TestGetMe(t *testing.T) {
 	userSvc := initTest(t)
 
 	user, err := userSvc.GetMe()
@@ -94,7 +93,7 @@ func TestGetMe(t *testing.T){
 	fmt.Printf("user=%#v\n", user)
 }
 
-func TestFetchShortProfiles(t *testing.T){
+func TestFetchShortProfiles(t *testing.T) {
 	userSvc := initTest(t)
 	user, err := userSvc.GetMe()
 	if err != nil {
@@ -115,7 +114,7 @@ func TestFetchShortProfiles(t *testing.T){
 
 }
 
-func TestGetUserProfilePicture(t *testing.T){
+func TestGetUserProfilePicture(t *testing.T) {
 	userSvc := initTest(t)
 	email, err := getTokenEmail(t)
 
@@ -128,9 +127,8 @@ func TestGetUserProfilePicture(t *testing.T){
 		t.Errorf("unable to create temp file: %v", err)
 		t.Fail()
 	}
-	
+
 	_, _ = f.Write(profilePicture)
 	_ = f.Close()
 	fmt.Printf("profile picture saved to %v", f.Name())
 }
-

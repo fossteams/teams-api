@@ -13,8 +13,8 @@ import (
 const SkypeSpacesEndpoint = "https://api.teams.skype.com"
 
 type SkypeSpaceSvc struct {
-	token *SkypeToken
-	endpoint *url.URL
+	token      *SkypeToken
+	endpoint   *url.URL
 	httpClient *http.Client
 }
 
@@ -24,8 +24,8 @@ func NewSkypeSpaceService(token *SkypeToken) SkypeSpaceSvc {
 		panic(fmt.Sprintf("unable to parse SkypeSpaceService endpoint: %v", err))
 	}
 	return SkypeSpaceSvc{
-		token:    token,
-		endpoint: endpoint,
+		token:      token,
+		endpoint:   endpoint,
 		httpClient: http.DefaultClient,
 	}
 }

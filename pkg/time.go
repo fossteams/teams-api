@@ -11,7 +11,7 @@ type RFC3339Time time.Time
 var _ json.Unmarshaler = &RFC3339Time{}
 var _ json.Marshaler = &RFC3339Time{}
 
-func (t *RFC3339Time) MarshalJSON() ([]byte, error){
+func (t *RFC3339Time) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf("\"%s\"", time.Time(*t).Format(time.RFC3339Nano))), nil
 }
 

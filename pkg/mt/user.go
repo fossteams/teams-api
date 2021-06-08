@@ -132,7 +132,7 @@ func (m *MTService) GetMe() (*models.User, error) {
 
 type UsersResponse struct {
 	Value []models.User `json:"value"`
-	Type  string `json:"type"`
+	Type  string        `json:"type"`
 }
 
 func (m *MTService) FetchShortProfile(mri ...string) ([]models.User, error) {

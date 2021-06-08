@@ -12,19 +12,19 @@ func TestParseAuth(t *testing.T) {
 	strReader := bytes.NewReader([]byte(response))
 	dec := json.NewDecoder(strReader)
 	dec.DisallowUnknownFields()
-	
+
 	var authResp AuthzResponse
 	err := dec.Decode(&authResp)
-	
+
 	if err != nil {
 		t.Error(err)
 		t.Fail()
 	}
-	
+
 	fmt.Printf("%v", authResp)
 }
 
-func TestRefreshToken(t *testing.T){
+func TestRefreshToken(t *testing.T) {
 	authzClient := New(nil)
 	rootToken, err := GetRootToken()
 	if err != nil {

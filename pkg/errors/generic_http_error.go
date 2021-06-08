@@ -3,9 +3,9 @@ package errors
 import "fmt"
 
 type GenericHTTPError struct {
-	statusCode int
+	statusCode         int
 	expectedStatusCode int
-	body []byte
+	body               []byte
 }
 
 func NewHTTPError(expectedStatusCode int, statusCode int, body []byte) GenericHTTPError {
