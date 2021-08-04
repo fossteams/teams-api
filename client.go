@@ -19,6 +19,10 @@ func (t *TeamsClient) Debug(debugFlag bool) {
 	t.chatSvc.DebugSave(debugFlag)
 }
 
+func (t *TeamsClient) ChatSvc() *csa.CSASvc {
+	return t.chatSvc
+}
+
 func New() (*TeamsClient, error) {
 	teamsClient := TeamsClient{}
 
