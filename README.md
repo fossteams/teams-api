@@ -40,3 +40,8 @@ This would also be interesting because we can use it as a platform to discuss th
 API / CLI and it will help us implement more features related to multi-tenancy.
 
 [Join us now](https://teams.microsoft.com/join/w3ifka78r1ai)
+
+### Projects using this library
+
+- [fossteams-frontend](https://github.com/fossteams/fossteams-frontend) + 
+  [fossteams-backend](https://github.com/fossteams/fossteams-backend) 
