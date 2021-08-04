@@ -26,7 +26,8 @@ type PrivateFeed struct {
 }
 
 type ConversationMetadata struct {
-	SyncToken string
+	SyncToken     string
+	IsPartialData bool
 }
 
 type ChatMemberRole string
@@ -102,6 +103,7 @@ type Chat struct {
 	IsOneOnOne                bool               `json:"isOneOnOne"`
 	IsRead                    bool               `json:"isRead"`
 	IsSticky                  bool               `json:"isSticky"`
+	IsShared                  bool               `json:"isShared"'`
 	LastJoinAt                time.Time          `json:"lastJoinAt"`
 	LastLeaveAt               time.Time          `json:"lastLeaveAt"`
 	LastMessage               Message            `json:"lastMessage"`
@@ -251,6 +253,7 @@ type Channel struct {
 	ConnectorProfiles        []ConnectorProfile
 	IsDeleted                bool
 	IsPinned                 bool
+	IsShared                 bool
 	LastImportantMessageTime time.Time
 	LastLeaveAt              time.Time
 	LastJoinAt               time.Time
@@ -270,6 +273,7 @@ type Channel struct {
 	IsModerator              bool
 	GroupId                  string
 	ChannelOnlyMember        bool
+	ExplicitlyAdded          bool
 	ThreadSchemaVersion      string `json:"threadSchemaVersion,omitempty"`
 	UserConsumptionHorizon   ConsumptionHorizon
 	TenantId                 string `json:"tenantId"`

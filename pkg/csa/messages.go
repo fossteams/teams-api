@@ -31,6 +31,11 @@ type Emotion struct {
 	Users []UserEmotion
 }
 
+type DeltaEmotion struct {
+	Key   string
+	Users []UserEmotion
+}
+
 type ChatMessageProperties struct {
 	Subject               string
 	Title                 string
@@ -38,6 +43,7 @@ type ChatMessageProperties struct {
 	Meta                  string
 	Files                 string
 	Emotions              []Emotion
+	DeltaEmotions         []DeltaEmotion
 	DeleteTime            int64 // TODO: Convert to time.Time ?
 	AdminDelete           bool
 	S2SPartnerName        string
