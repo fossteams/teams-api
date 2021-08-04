@@ -34,7 +34,6 @@ func NewCSAService(token *api.TeamsToken, skypeToken *api.SkypeToken) (*CSASvc, 
 	if token == nil {
 		return nil, fmt.Errorf("token cannot be nil")
 	}
-
 	if skypeToken == nil {
 		return nil, fmt.Errorf("skypeToken cannot be nil")
 	}
@@ -53,6 +52,7 @@ func NewCSAService(token *api.TeamsToken, skypeToken *api.SkypeToken) (*CSASvc, 
 		skypeToken:                 skypeToken,
 		client:                     client,
 		debugDisallowUnknownFields: false,
+		debugSave:                  false,
 	}, nil
 }
 
