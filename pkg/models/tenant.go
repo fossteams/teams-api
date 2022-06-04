@@ -52,6 +52,7 @@ type User struct {
 	SkypeTeamsInfo             SkypeTeamsInfo  `json:"skypeTeamsInfo,omitempty"`
 	SmtpAddresses              []string        `json:"smtpAddresses,omitempty"`
 	Surname                    string          `json:"surname"`
+	TenantName                 string          `json:"tenantName"`
 	TelephoneNumber            string          `json:"telephoneNumber,omitempty"`
 	Type                       string          `json:"type"`
 	UserLocation               string          `json:"userLocation"`
