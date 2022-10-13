@@ -18,7 +18,7 @@ func GetJSON(resp *http.Response, debugSave bool) (io.Reader, error) {
 		if err != nil {
 			return nil, fmt.Errorf("unable to create temporary file")
 		}
-		jsonBytes, err := ioutil.ReadAll(resp.Body)
+		jsonBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return nil, fmt.Errorf("unable to read response body: %v", err)
 		}

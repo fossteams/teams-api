@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/fossteams/teams-api/pkg/errors"
+	"github.com/fossteams/teams-api/pkg/models"
 	"github.com/fossteams/teams-api/pkg/util"
 	"io"
 	"net/http"
@@ -12,7 +13,7 @@ import (
 	"strings"
 )
 
-func (c *CSASvc) GetConversations() (*ConversationResponse, error) {
+func (c *CSASvc) GetConversations() (*models.ConversationResponse, error) {
 	endpointUrl := c.getEndpoint(EndpointChatSvcAgg, "/teams/users/me")
 
 	values := endpointUrl.Query()
@@ -25,7 +26,7 @@ func (c *CSASvc) GetConversations() (*ConversationResponse, error) {
 		return nil, err
 	}
 
-	var teams ConversationResponse
+	var teams models.ConversationResponse
 	decoder := json.NewDecoder(jsonBuffer)
 	if c.debugDisallowUnknownFields {
 		decoder.DisallowUnknownFields()
@@ -63,7 +64,7 @@ func (c *CSASvc) authenticatedGetRequest(endpointUrl *url.URL) (io.Reader, error
 	return jsonBuffer, nil
 }
 
-type TeamsByName []Team
+type TeamsByName []models.CSATeam
 
 func (t TeamsByName) Less(i, j int) bool {
 	return strings.ToLower(t[i].DisplayName) < strings.ToLower(t[j].DisplayName)

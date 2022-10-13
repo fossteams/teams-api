@@ -8,18 +8,20 @@ import (
 	"strings"
 )
 
-type MTService struct {
+type Service struct {
 	middleTierUrl              *url.URL
 	region                     api.Region
-	token                      *api.TeamsToken
 	client                     *http.Client
 	debugSave                  bool
 	debugDisallowUnknownFields bool
+
+	token      *api.TeamsToken
+	teamsToken *api.TeamsToken
 }
 
 const MiddleTier = "https://teams.microsoft.com/api/mt/"
 
-func NewMiddleTierService(region api.Region, token *api.TeamsToken) (*MTService, error) {
+func NewMiddleTierService(region api.Region, token *api.TeamsToken, teamsToken *api.TeamsToken) (*Service, error) {
 	svcUrl, err := url.Parse(MiddleTier)
 	if err != nil {
 		return nil, err
@@ -27,9 +29,10 @@ func NewMiddleTierService(region api.Region, token *api.TeamsToken) (*MTService,
 
 	client := http.DefaultClient
 
-	return &MTService{
+	return &Service{
 		middleTierUrl:              svcUrl,
 		token:                      token,
+		teamsToken:                 teamsToken,
 		region:                     region,
 		client:                     client,
 		debugSave:                  false,
@@ -37,15 +40,15 @@ func NewMiddleTierService(region api.Region, token *api.TeamsToken) (*MTService,
 	}, nil
 }
 
-func (m *MTService) DebugSave(flag bool) {
+func (m *Service) DebugSave(flag bool) {
 	m.debugSave = flag
 }
 
-func (m *MTService) DebugDisallowUnknownFields(flag bool) {
+func (m *Service) DebugDisallowUnknownFields(flag bool) {
 	m.debugDisallowUnknownFields = flag
 }
 
-func (m *MTService) AuthenticatedRequest(method, url string, body io.Reader) (*http.Request, error) {
+func (m *Service) AuthenticatedRequest(method, url string, body io.Reader) (*http.Request, error) {
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return nil, err
@@ -55,7 +58,17 @@ func (m *MTService) AuthenticatedRequest(method, url string, body io.Reader) (*h
 	return req, nil
 }
 
-func (m *MTService) getEndpoint(path string) *url.URL {
+func (m *Service) CookieRequest(method, url string, body io.Reader) (*http.Request, error) {
+	req, err := http.NewRequest(method, url, body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.AddCookie(&http.Cookie{Name: "TSAUTHCOOKIE", Value: m.teamsToken.Inner.Raw})
+	return req, nil
+}
+
+func (m *Service) getEndpoint(path string) *url.URL {
 	if strings.HasPrefix(path, "/") {
 		path = path[1:]
 	}

@@ -12,7 +12,7 @@ import (
 	"testing"
 )
 
-func initTest(t *testing.T) *mt.MTService {
+func initTest(t *testing.T) *mt.Service {
 	token, err := api.GetRootToken()
 	if err != nil {
 		t.Error(err)

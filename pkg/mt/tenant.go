@@ -3,7 +3,7 @@ package mt
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -11,7 +11,7 @@ type VerifiedDomain struct {
 	Name string
 }
 
-func (m *MTService) GetVerifiedDomains() (*[]VerifiedDomain, error) {
+func (m *Service) GetVerifiedDomains() (*[]VerifiedDomain, error) {
 	endpointUrl := m.getEndpoint("/tenant/verifiedDomains")
 	req, err := m.AuthenticatedRequest("GET", endpointUrl.String(), nil)
 	if err != nil {
@@ -23,7 +23,7 @@ func (m *MTService) GetVerifiedDomains() (*[]VerifiedDomain, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		bodyString, err := ioutil.ReadAll(resp.Body)
+		bodyString, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return nil, fmt.Errorf("invalid status code %d", resp.StatusCode)
 		}

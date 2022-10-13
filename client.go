@@ -12,7 +12,7 @@ import "github.com/fossteams/teams-api/pkg"
 type TeamsClient struct {
 	httpClient *http.Client
 	chatSvc    *csa.CSASvc
-	mtSvc      *mt.MTService
+	mtSvc      *mt.Service
 }
 
 func (t *TeamsClient) Debug(debugFlag bool) {
@@ -42,6 +42,11 @@ func New() (*TeamsClient, error) {
 		return nil, err
 	}
 
+	teamsToken, err := api.GetTeamsToken()
+	if err != nil {
+		return nil, err
+	}
+
 	// Initialize Chat Service
 	csaSvc, err := csa.NewCSAService(chatSvcToken, skypeToken)
 	if err != nil {
@@ -50,7 +55,7 @@ func New() (*TeamsClient, error) {
 	teamsClient.chatSvc = csaSvc
 
 	// Initialize MT Service
-	mtSvc, err := mt.NewMiddleTierService(api.Emea, skypeSpaces)
+	mtSvc, err := mt.NewMiddleTierService(api.Emea, skypeSpaces, teamsToken)
 	if err != nil {
 		return nil, fmt.Errorf("unable to init MT Service: %v", err)
 	}
@@ -59,23 +64,31 @@ func New() (*TeamsClient, error) {
 	return &teamsClient, err
 }
 
-func (t TeamsClient) GetConversations() (*csa.ConversationResponse, error) {
+func (t *TeamsClient) GetConversations() (*models.ConversationResponse, error) {
 	return t.chatSvc.GetConversations()
 }
 
-func (t TeamsClient) GetMessages(channel *csa.Channel) ([]csa.ChatMessage, error) {
+func (t *TeamsClient) GetMessages(channel *models.Channel) ([]models.ChatMessage, error) {
 	return t.chatSvc.GetMessagesByChannel(channel)
 }
 
-func (t TeamsClient) GetMe() (*models.User, error) {
+func (t *TeamsClient) GetMe() (*models.User, error) {
 	return t.mtSvc.GetMe()
 }
 
-func (t TeamsClient) FetchShortProfile(mris []string) ([]models.User, error) {
+func (t *TeamsClient) FetchShortProfile(mris []string) ([]models.User, error) {
 	return t.mtSvc.FetchShortProfile(mris...)
 }
 
-func (t TeamsClient) GetTenants() ([]models.Tenant, error) {
+func (t *TeamsClient) GetProfilePicture(emailOrId string) ([]byte, error) {
+	return t.mtSvc.GetProfilePicture(emailOrId)
+}
+
+func (t *TeamsClient) GetTeamsProfilePicture(emailOrId string) ([]byte, error) {
+	return t.mtSvc.GetTeamsProfilePicture(emailOrId)
+}
+
+func (t *TeamsClient) GetTenants() ([]models.Tenant, error) {
 	return t.mtSvc.GetTenants()
 }
 

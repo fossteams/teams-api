@@ -1,9 +1,9 @@
-package csa_test
+package models_test
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/fossteams/teams-api/pkg/csa"
+	"github.com/fossteams/teams-api/pkg/models"
 	"os"
 	"testing"
 )
@@ -15,7 +15,7 @@ func TestParseMessages(t *testing.T) {
 		t.Fatalf("unable to open file: %v", err)
 	}
 
-	var messages csa.MessagesResponse
+	var messages models.MessagesResponse
 	dec := json.NewDecoder(f)
 
 	err = dec.Decode(&messages)

@@ -10,12 +10,12 @@ import (
 	"github.com/fossteams/teams-api/pkg/errors"
 	"github.com/fossteams/teams-api/pkg/models"
 	"github.com/fossteams/teams-api/pkg/util"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 )
 
-func (m *MTService) GetTenants() ([]models.Tenant, error) {
+func (m *Service) GetTenants() ([]models.Tenant, error) {
 	endpointUrl := m.getEndpoint("/users/tenants")
 	req, err := m.AuthenticatedRequest("GET", endpointUrl.String(), nil)
 	if err != nil {
@@ -28,7 +28,7 @@ func (m *MTService) GetTenants() ([]models.Tenant, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		bodyString, err := ioutil.ReadAll(resp.Body)
+		bodyString, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return nil, fmt.Errorf("invalid status code %d", resp.StatusCode)
 		}
@@ -53,8 +53,13 @@ func (m *MTService) GetTenants() ([]models.Tenant, error) {
 	return tenant, nil
 }
 
-func (m *MTService) GetUser(email string) (*models.User, error) {
-	endpointUrl := m.getEndpoint("/users/" + url.PathEscape(email) + "/")
+func (m *Service) GetUser(email string) (*models.User, error) {
+	endpointUrl := m.getEndpoint(
+		fmt.Sprintf(
+			"/users/%s/",
+			url.PathEscape(email),
+		),
+	)
 
 	values := endpointUrl.Query()
 	values.Add("throwIfNotFound", "false")
@@ -121,7 +126,7 @@ func GetTokenEmail(token *api.TeamsToken) (string, error) {
 	}
 }
 
-func (m *MTService) GetMe() (*models.User, error) {
+func (m *Service) GetMe() (*models.User, error) {
 	// Retrieve email from token
 	email, err := GetTokenEmail(m.token)
 	if err != nil {
@@ -130,12 +135,7 @@ func (m *MTService) GetMe() (*models.User, error) {
 	return m.GetUser(email)
 }
 
-type UsersResponse struct {
-	Value []models.User `json:"value"`
-	Type  string        `json:"type"`
-}
-
-func (m *MTService) FetchShortProfile(mri ...string) ([]models.User, error) {
+func (m *Service) FetchShortProfile(mri ...string) ([]models.User, error) {
 	endpointUrl := m.getEndpoint("/users/fetchShortProfile")
 	values := endpointUrl.Query()
 	values.Add("isMailAddress", "false")
@@ -171,7 +171,7 @@ func (m *MTService) FetchShortProfile(mri ...string) ([]models.User, error) {
 		return nil, fmt.Errorf("unable to read body: %v", err)
 	}
 
-	var userResp UsersResponse
+	var userResp models.UsersResponse
 	dec := json.NewDecoder(jsonReader)
 	if m.debugDisallowUnknownFields {
 		dec.DisallowUnknownFields()
@@ -184,8 +184,12 @@ func (m *MTService) FetchShortProfile(mri ...string) ([]models.User, error) {
 	return userResp.Value, nil
 }
 
-func (m *MTService) GetProfilePicture(email string) ([]byte, error) {
-	endpointUrl := m.getEndpoint("/users/" + url.PathEscape(email) + "/profilepicture?displayname=aaa")
+func (m *Service) GetProfilePicture(emailOrId string) ([]byte, error) {
+	endpointUrl := m.getEndpoint(
+		fmt.Sprintf("/users/%s/profilepicture?displayname=aaa",
+			url.PathEscape(emailOrId),
+		),
+	)
 	req, err := m.AuthenticatedRequest("GET", endpointUrl.String(), nil)
 	if err != nil {
 		return nil, err
@@ -196,16 +200,44 @@ func (m *MTService) GetProfilePicture(email string) ([]byte, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		bodyString, err := ioutil.ReadAll(resp.Body)
+		bodyString, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return nil, fmt.Errorf("invalid status code %d", resp.StatusCode)
 		}
 		return nil, fmt.Errorf("invalid status code %d: resp = %s", resp.StatusCode, string(bodyString))
 	}
 
-	pictureBytes, err := ioutil.ReadAll(resp.Body)
+	pictureBytes, err := io.ReadAll(resp.Body)
 	// pictureBytes is a B64 representation of the JPG image
 	// let's decode it
 	picBytes, err := base64.StdEncoding.DecodeString(string(pictureBytes))
 	return picBytes, err
+}
+
+// TODO: Test and check why it returns a 401
+func (m *Service) GetTeamsProfilePicture(emailOrId string) ([]byte, error) {
+	endpointUrl := m.getEndpoint(
+		fmt.Sprintf("/teams/%s/profilepicturev2",
+			url.PathEscape(emailOrId),
+		),
+	)
+	req, err := m.CookieRequest("GET", endpointUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := m.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		bodyString, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("invalid status code %d", resp.StatusCode)
+		}
+		return nil, fmt.Errorf("invalid status code %d: resp = %s", resp.StatusCode, string(bodyString))
+	}
+
+	pictureBytes, err := io.ReadAll(resp.Body)
+	return pictureBytes, err
 }

@@ -2,13 +2,19 @@ package csa_test
 
 import (
 	"fmt"
+	"github.com/fossteams/teams-api/pkg/csa/models"
 	"github.com/stretchr/testify/assert"
+	"os"
 	"testing"
 )
 
+func DebugSave() bool {
+	return os.Getenv("TEAMS_DEBUG_SAVE") == "1"
+}
+
 func TestGetMessagesByChannel(t *testing.T) {
-	csaSvc := initTest(t)
-	csaSvc.DebugSave(true)
+	csaSvc := models.initTest(t)
+	csaSvc.DebugSave(DebugSave())
 
 	conversations, err := csaSvc.GetConversations()
 	if err != nil {
@@ -28,15 +34,16 @@ func TestGetMessagesByChannel(t *testing.T) {
 }
 
 func TestGetPinnedChannels(t *testing.T) {
-	csaSvc := initTest(t)
-	csaSvc.DebugSave(true)
+	csaSvc := models.initTest(t)
+	csaSvc.DebugSave(DebugSave())
+
 	pinnedChannels, err := csaSvc.GetPinnedChannels()
 	assert.Nil(t, err)
 	assert.NotNil(t, pinnedChannels)
 
 	fmt.Printf("Pinned channels: \n")
 	for _, v := range pinnedChannels {
-		fmt.Printf("\t%s", v)
+		fmt.Printf("\t%s\n", v)
 	}
 	fmt.Printf("\n")
 }

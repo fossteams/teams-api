@@ -1,12 +1,8 @@
-package csa
+package models
 
 import (
-	api "github.com/fossteams/teams-api/pkg"
 	"time"
 )
-
-type User struct {
-}
 
 type FeedProperty struct {
 	IsEmptyConversation        string
@@ -126,7 +122,7 @@ type ConversationResponse struct {
 	Chats        []Chat
 	Metadata     ConversationMetadata
 	PrivateFeeds []PrivateFeed
-	Teams        []Team
+	Teams        []CSATeam
 	Users        []User
 }
 
@@ -172,8 +168,8 @@ type Message struct {
 	ImDisplayName           string
 	Id                      string
 	Type                    string
-	ComposeTime             api.RFC3339Time
-	OriginalArrivalTime     api.RFC3339Time
+	ComposeTime             RFC3339Time
+	OriginalArrivalTime     RFC3339Time
 	ContainerId             string
 	ParentMessageId         string
 	From                    string
@@ -186,8 +182,8 @@ type Message struct {
 type MemberRole int
 
 const (
-	Unknown MemberRole = iota
-	Member
+	MemberRole_Unknown MemberRole = iota
+	MemberRole_Member
 )
 
 type ChannelType int
@@ -347,7 +343,7 @@ type ExtensionDefinition struct {
 	UpdatedTime time.Time
 }
 
-type Team struct {
+type CSATeam struct {
 	AccessType                     AccessType          `json:"accessType"`
 	ChannelOnlyMember              bool                `json:"channelOnlyMember"`
 	Channels                       []Channel           `json:"channels"`

@@ -3,6 +3,7 @@ package csa
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/fossteams/teams-api/pkg/models"
 	"sort"
 	"strings"
 )
@@ -32,7 +33,7 @@ func (c *CSASvc) GetPinnedChannels() ([]ChannelId, error) {
 	return pinnedChannelResponse.PinChannelOrder, nil
 }
 
-type ChannelsByName []Channel
+type ChannelsByName []models.Channel
 
 func (c ChannelsByName) Len() int {
 	return len(c)
